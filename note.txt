@@ -1,0 +1,45 @@
+1. Create Laravel Project
+	composer create-project --prefer-dist laravel/laravel ticketcentral
+
+2. Install Package
+	->	composer require laravel/jetstream
+	->	php artisan jetstream:install livewire
+	->	php artisan jetstream:install inertia
+	-> 	npm install
+	-> 	npm run dev
+
+3. Define String Length
+	app >> Providers >> AppServiceProvider.php
+
+4. Create Database in phpmyadmin
+
+5. keys to your database
+	.env
+		-> DB_DATABASE | DB_USERNAME | DB_PASSWORD
+
+6. migrate
+	-> php artisan migrate
+
+7. laravel development server
+	->	php artisan serve
+
+8. Create Migration / Controller / Model
+	Migration
+	-> php artisan make:migration create_categories_table
+
+	Seeding
+	-> php artisan make:seeder CategorySeeder
+
+	Controller
+	-> php artisan make:controller CategoryController -r
+	-> php artisan make:controller CategoryController --resource
+	-> php artisan make:controller CategoryController
+
+	Model
+	-> php artisan make:model Cateogry
+
+	All SET ( Migration, Seeding, Controller, Model)
+	-> php artisan make:model Category -mcr
+
+
+
