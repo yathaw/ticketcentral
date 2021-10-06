@@ -11,7 +11,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\MovieController;
 use App\Http\Controllers\ActController;
-
+use App\Http\Controllers\LocalizationController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -36,6 +36,9 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->name('dashboard');
 
+// language
+Route::get('lang/{locale}',[LocalizationController::class, 'index'])->name('lang');
+
 Route::prefix('master')->name('master.')->group(function()
 {
     // Cinema
@@ -49,7 +52,7 @@ Route::prefix('master')->name('master.')->group(function()
     Route::get('/getOndemand',[MovieController::class, 'getOndemand'])->name('getOndemand');
 
     // Act
-    Route::resource('/act', MovieController::class);
+    Route::resource('/act', ActController::class);
 
     // Genre
     Route::resource('/genre', GenreController::class);

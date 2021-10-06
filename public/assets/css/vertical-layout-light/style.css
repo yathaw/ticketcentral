@@ -22599,7 +22599,7 @@ code {
 }
 
 .form-check .form-check-label input[type="radio"]:checked + .input-helper:before {
-  background: #4B49AC;
+  background: #fb9300;
   border-width: 0;
 }
 

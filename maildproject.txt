@@ -1,0 +1,271 @@
+<?php
+
+namespace App\Http\Controllers\Photo;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Photodiary;
+use App\Store;
+use App\GirlInformation;
+use Auth;
+use MailSlurp;
+use GuzzleHttp;
+use MailSlurpSDK;
+
+use Carbon\Carbon;
+use PHPUnit\Framework\TestCase;
+
+class PhotoDiaryController extends Controller
+{
+    public function index()
+    {
+        $store = Store::findOrFail(Auth::user()->store->id);
+        $girl_lists = GirlInformation::where('store_id', $store->id)->orderBy('position', 'asc')->get();
+
+        return view('admin.management.photo-diary',compact('girl_lists'));
+
+    }
+    /* Diary List */
+    public function diaryList()
+    {
+        return view('admin.management.diary-list');
+    }
+
+    /* how to use */
+    public function howUse()
+    {
+        return view('admin.management.how-to-use');
+    }
+
+    /* create widget */
+    public function createWidget()
+    {
+        return view('admin.management.create-widget');
+    }
+
+    public function createmail($id){
+        $girl = GirlInformation::find($id);
+        // dd($girl);
+
+        $config = MailSlurp\Configuration::getDefaultConfiguration()->setApiKey('x-api-key', 'e3b5ca38c015dfcdb7fd3d4f1f1ff6a58ab99a4098e5ed8787f43cdb32ba9c08');
+
+        // create an inbox controller with config
+        $inboxController = new MailSlurp\Apis\InboxControllerApi(null, $config);
+
+        $allow_team_access = True; 
+        $description = NULL;
+        // $email_address = 'anything@dev.d-pj.icu';
+        $email_address = NULL;
+
+        $expires_at = NULL;
+        $expires_in = NULL;
+        $favourite = NULL;
+        $inbox_type = NULL;
+        $name = $girl->nickname;
+        $tags = null; 
+        $use_domain_pool = false;
+
+        // create inbox
+        $inbox = $inboxController->createInbox($allow_team_access, $description, $email_address, $expires_at, $expires_in, $favourite, $inbox_type, $name, $tags, $use_domain_pool);
+
+        $autoaddress = $inbox['email_address'];
+        $autouser_id = $inbox['user_id'];
+
+
+        $girl->mail = $autoaddress;
+        $girl->mailid = $autouser_id;
+
+        $girl->save();
+
+        return back();
+
+    }
+
+    public function receiveemail($id){
+
+        $girl = GirlInformation::find($id);
+        $girl_mailid = $girl->mailid;
+        $girl_mail = $girl->mail;
+
+        $girl_mail_array = explode('@', $girl_mail);
+        $girlmailid = $girl_mail_array[0];
+
+        $start = Carbon::now()->startOfMonth()->format('Y-m-d\TH:i:s.uP');
+        $end = Carbon::now()->endOfMonth()->format('Y-m-d\TH:i:s.uP');
+
+        $config = MailSlurpSDK\Configuration::getDefaultConfiguration()->setApiKey('x-api-key', 'e3b5ca38c015dfcdb7fd3d4f1f1ff6a58ab99a4098e5ed8787f43cdb32ba9c08');
+        $apiInstance = new MailSlurpSDK\MailSlurpAPI\CommonOperationsApi(
+            new GuzzleHttp\Client(),
+            $config
+          );
+        $email = $apiInstance->fetchLatestEmailUsingGET($girl_mail, null);
+
+        dd($email);
+    }
+
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create($id)
+    {
+        $girl = GirlInformation::find($id);
+
+        return view('admin.management.create-widget',compact('girl'));
+
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $validator = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'body' => ['required', 'string', 'max:255'],
+            'attachimage' => 'required|mimes:jpeg,bmp,png,jpg|max:30000|dimensions:min_width=320,max_width=640,max_height=960',
+        ]);
+
+        if($validator)
+        {
+            $girlid = $request->girlid;
+
+            $photodiary = Photodiary::where('girl_id', $girlid)
+                        ->whereDate('created_at', Carbon::today())
+                        ->count();
+
+            if ($photodiary <= 20) {
+                $title = $request->title;
+                $body = $request->body;
+                // $attachimage = $request->attachimage;
+
+                $attachimage = $request->file(['attachimage']);
+                $attachimage_name = $attachimage->getClientOriginalName();
+                $attachimage->storeAs('public/', $attachimage_name);
+
+                $photodiary = new Photodiary;
+                $photodiary->title = $title;
+                $photodiary->body = $body;
+                $photodiary->girl_id = $girlid;
+                $photodiary->image = $attachimage_name;
+
+                $photodiary->save();
+            
+
+                return redirect()->route('photo-diary')->with('successMsg','Store Success');
+            }else{
+                return redirect()->route('photo-diary')->with('errMsg','Limit for today');
+            }
+
+            
+        }else{
+            return Redirect::back()->withErrors($validator);
+        }
+
+    }
+
+    public function show($id)
+    {
+        $store = Store::findOrFail(Auth::user()->store->id);
+        $girls = GirlInformation::where('store_id', $store->id)->get();
+
+        $girl = GirlInformation::find($id);
+        $photodiaries = photodiary::where('girl_id',$girl->id)->get();
+
+        $this->receiveemail($id);
+
+
+        return view('admin.management.diary-list',compact('girl', 'photodiaries','girls'));
+        
+    }
+
+    public function edit($id)
+    {
+        $photodiary = Photodiary::find($id);
+
+        $girl = GirlInformation::find($photodiary->girl_id);
+
+        return view('admin.management.create-widget',compact('girl','photodiary'));
+
+
+    }
+
+    public function update(Request $request)
+    {
+        $validator = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'body' => ['required', 'string', 'max:255'],
+            'attachimage' => 'sometimes|mimes:jpeg,bmp,png,jpg'
+
+        ]);
+
+        if($validator)
+        {
+            $id = $request->id;
+
+            $girlid = $request->girlid;
+
+            $title = $request->title;
+            $body = $request->body;
+
+            $oldimage = $request->oldimage;
+
+            // File Upoload
+            if ($request->hasFile('attachimage')) {
+
+                $attachimage = $request->file(['attachimage']);
+                $attachimage_name = $attachimage->getClientOriginalName();
+                $attachimage->storeAs('public/', $attachimage_name);
+
+                if(\File::exists(public_path($oldimage))){
+                    \File::delete(public_path($oldimage));
+                }
+
+            }else{
+                
+                $attachimage_name = $oldimage;
+
+            }
+
+            // Data insert
+            $photodiary = Photodiary::find($id);
+            $photodiary->title = $title;
+            $photodiary->body = $body;
+            $photodiary->girl_id = $girlid;
+            $photodiary->image = $attachimage_name;
+
+            $photodiary->save();
+
+            // Return 
+            return redirect()->route('photo-diary')->with('successMsg','Update Success');
+
+        }
+        else
+        {
+            return Redirect::back()->withErrors($validator);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Request $request)
+    {
+        $ids = $request->id;
+
+        foreach($ids as $id){
+            $photodiary = Photodiary::find($id);
+            $photodiary->delete();
+        }
+        return redirect()->route('photo-diary')->with('successMsg','Delete Success');
+
+    }
+}

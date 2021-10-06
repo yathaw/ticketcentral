@@ -5,6 +5,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title> Ticket Central </title>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
         <!-- plugins:css -->
         <link rel="stylesheet" href="{{ asset('assets/vendors/feather/feather.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/vendors/ti-icons/css/themify-icons.css')}}">
@@ -24,6 +26,8 @@
 
         <link rel="stylesheet" href="{{ asset('assets/vendors/select2/select2.min.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/vendors/select2-bootstrap-theme/select2-bootstrap.min.css') }}">
+
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/sweetalert/sweetalert2.min.css') }}">
     </head>
     <body>
         <div class="container-scroller">
@@ -53,7 +57,7 @@
                                     <i class="icon-search"></i>
                                     </span>
                                 </div>
-                                <input type="text" class="form-control" id="navbar-search-input" placeholder="Search now" aria-label="search" aria-describedby="search">
+                                <input type="text" class="form-control" id="navbar-search-input" placeholder="{{ __('Search now') }}" aria-label="search" aria-describedby="search">
                             </div>
                         </li>
                     </ul>
@@ -75,9 +79,9 @@
                                 <i class="mdi mdi-translate"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="languageDropdown">
-                                <p class="mb-0 font-weight-normal float-left dropdown-header">Choose Language</p>
+                                <p class="mb-0 font-weight-normal float-left dropdown-header">{{ __('Choose Language') }}</p>
                                 
-                                <a class="dropdown-item preview-item">
+                                <a href="{{ route('lang','en') }}" class="dropdown-item preview-item">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon">
                                             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -136,7 +140,7 @@
                                         <h6 class="preview-subject font-weight-normal"> {{ __("English")}}  </h6>
                                     </div>
                                 </a>
-                                <a class="dropdown-item preview-item">
+                                <a href="{{ route('lang','mm') }}"  class="dropdown-item preview-item">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon">
                                             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -186,7 +190,7 @@
                                         <h6 class="preview-subject font-weight-normal">{{ __("Myanmar")}}</h6>
                                     </div>
                                 </a>
-                                <a class="dropdown-item preview-item">
+                                <a href="{{ route('lang','jp') }}"  class="dropdown-item preview-item">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon">
                                             <svg viewBox="1 -79 511.999 511" xmlns="http://www.w3.org/2000/svg"><path d="m397.242188 353.601562h97.101562c9.75 0 17.65625-7.902343 17.65625-17.652343v-317.792969c0-9.753906-7.90625-17.65625-17.65625-17.65625h-476.6875c-9.753906 0-17.65625 7.90625-17.65625 17.65625v317.792969c0 9.75 7.902344 17.652343 17.65625 17.652343zm0 0" fill="#e6e7e8"/><path d="m353.101562 177.050781c0 53.628907-43.472656 97.105469-97.101562 97.105469s-97.101562-43.476562-97.101562-97.105469c0-53.628906 43.472656-97.101562 97.101562-97.101562s97.101562 43.472656 97.101562 97.101562zm0 0" fill="#c03a2b"/></svg>
@@ -196,7 +200,7 @@
                                         <h6 class="preview-subject font-weight-normal"> {{ __("Japan")}} </h6>
                                     </div>
                                 </a>
-                                <a class="dropdown-item preview-item">
+                                <a href="{{ route('lang','cn') }}"  class="dropdown-item preview-item">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon">
                                             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -257,7 +261,7 @@
                                         <h6 class="preview-subject font-weight-normal"> {{ __("China")}} </h6>
                                     </div>
                                 </a>
-                                <a class="dropdown-item preview-item">
+                                <a  href="{{ route('lang','de') }}" class="dropdown-item preview-item">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon">
                                             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -304,7 +308,7 @@
                                         <h6 class="preview-subject font-weight-normal"> {{ __("Germany")}} </h6>
                                     </div>
                                 </a>
-                                <a class="dropdown-item preview-item">
+                                <a href="{{ route('lang','fr') }}"  class="dropdown-item preview-item">
                                     <div class="preview-thumbnail">
                                         <div class="preview-icon">
                                             <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -583,6 +587,10 @@
 
         <script src="{{ asset('assets/vendors/select2/select2.min.js') }}"></script>
         <script src="{{ asset('assets/js/select2.js') }}"></script>
+
+        <script src="{{ asset('assets/js/file-upload.js') }}"></script>
+
+        <script src="{{ asset('assets/vendors/sweetalert/sweetalert2.all.min.js') }}"></script>
 
 
         <script type="text/javascript">
